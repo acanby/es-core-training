@@ -44,6 +44,16 @@ When paired with a database, consider not versioning data stored within elastics
 Each write operation will return the newest version number, (ie the worked on document)
 Each write operation can accept a version number, which is the expected version to work on. If this number does not match the version found by elasticsearch, the operation will fail
 
+Index requests are cached by elasticsearch, for around a minute. This is useful for requests which are near enough to simultaneous.
 
+Updates
+get-then-reindex to limit version conflicts and network roundtrips
+retry_on_confluct specifies the number of times to retry an idempotent update
+Updates will be retried if there is a version conflict between the get and update.
+Only works if _source is stored (is enabled by default)
+_update will update the document identified by the id in the url path. Existing data will be wrapped in a doc json block.
+upsert param can be added to do an update if exists, create otherwise type operation.
 
+Scripts can do anything that the elasticsearch user can do. They should typically be disabled for production use.
 
+_mget will return multiple documents at once, limiting the overhead of HTTP.
