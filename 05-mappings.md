@@ -42,4 +42,34 @@ Slop - the number of words allowed to appear within a phrase before a match is c
 
 Phrase_prefix - poor mans auto complete. Do not use for this purpose! Use Suggesters API instead. Will give Did you mean ...? searches etc.
 
+Use range filters where possible. Not a good idea to use on Strings, as they will need to be brought into memory. Best usage for numbers.
+Do range filters rather than queries.... it is either in the range or not. And you get caching for free.
+
+Control prefix/wildcard search with a decent length prefix. Will speed up the query as it limits the permutations.
+
+Fuzzy now quite efficient, used to be similar to prefix/wildcard. Now very suitable for usage. Looks for spellings up to 2 edits from the inputted word.
+
+Filter naming can save space in the cache, but means you must do the logic to retrieve the cached bitset from the cache. Tradeoffs.
+Filter on less changing items (eg on midnight for logging), and then cache based on the resultant subset. This will eliminate a large percentage of data, and still yeild acceptable performance.
+
+Warmer API ensures that the segment is warmed or ready to go before it is exposed to search. This ensures that there is no JIT like process for the first user to hit the page
+Warmers can be added to an existing index and will be run on new instances. Can be preconfigured to load specific data using queries etc.
+
+When highlighting the original text needs to be available, using the source field. This is necessary as the analyzed value might not represent the data you want to display.
+Three types of highlighters:
+1. Highlighter
+- no need for extra info during indexing, but does not support complex queries (will actually fail)
+2. Fast Vector Highlighter
+- Considerably increases the size of the index (somewhere around 2x)
+- No need for re analysis of index
+- Requires storing term vectors during indexing
+- It is not fast? (Despite the name)
+3. Postings highlighter (new)
+- Needs quite a bit of setup
+- Gives sentence based results
+- Doesn't use the space of the FVH
+- Is actually fast!
+
+Highlighter type is automatically chosen. Will choose FVH if term vectors is enabled, otherwise default highlighter. Can pass in which one you would like (not sure?)
+Highlighting can break HTML tags. Use a token which will *not* appear in the HTML, ie || to mark the positions where highlighting occurs. Then parse this into valid markup in your result to the client.
 
